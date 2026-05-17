@@ -1,0 +1,78 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags like v1.0.0
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: opencrc-linux
+            asset_name: opencrc-linux
+          - os: macos-latest
+            artifact_name: opencrc-macos
+            asset_name: opencrc-macos
+          - os: windows-latest
+            artifact_name: bin/crc.exe
+            asset_name: opencrc-windows.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: |
+            build/bin/crc
+            build/bin/crc.exe
+          if-no-files-found: ignore
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Organize assets
+        run: |
+          mkdir dist
+          # Copy and rename artifacts for cleaner release names
+          cp artifacts/opencrc-linux/build/bin/crc dist/opencrc-linux || true
+          cp artifacts/opencrc-macos/build/bin/crc dist/opencrc-macos || true
+          cp artifacts/opencrc-windows.exe/build/bin/crc.exe dist/opencrc-windows.exe || true
+          ls -R dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/opencrc-linux
+            dist/opencrc-macos
+            dist/opencrc-windows.exe
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
