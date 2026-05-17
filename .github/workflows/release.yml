@@ -3,37 +3,45 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Trigger on version tags like v1.0.0
+      - 'v*'
 
 jobs:
   build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # Don't cancel other jobs if one fails
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         include:
           - os: ubuntu-latest
             artifact_name: opencrc-linux
+            cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS=-static"
           - os: macos-latest
             artifact_name: opencrc-macos
+            cmake_flags: ""
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_flags }}
 
       - name: Build
         run: cmake --build build --config Release
+
+      - name: Prepare Binary
+        run: |
+          mkdir -p staging
+          cp build/bin/crc staging/opencrc
+          chmod +x staging/opencrc
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: build/bin/crc
+          path: staging/opencrc
 
   release:
     name: Create Release
@@ -42,16 +50,23 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download all artifacts
+      - name: Download Linux Artifact
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: opencrc-linux
+          path: linux_bin
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: opencrc-macos
+          path: macos_bin
 
       - name: Organize assets
         run: |
           mkdir dist
-          cp artifacts/opencrc-linux/crc dist/opencrc-linux
-          cp artifacts/opencrc-macos/crc dist/opencrc-macos
+          cp linux_bin/opencrc dist/opencrc-linux
+          cp macos_bin/opencrc dist/opencrc-macos
           chmod +x dist/*
           ls -R dist/
 
