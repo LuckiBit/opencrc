@@ -16,9 +16,11 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_name: opencrc-linux
+            archive_name: opencrc-linux.tar.gz
             cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS=-static"
           - os: macos-latest
             artifact_name: opencrc-macos
+            archive_name: opencrc-macos.tar.gz
             cmake_flags: ""
 
     steps:
@@ -31,17 +33,18 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Prepare Binary
+      - name: Package
         run: |
-          mkdir -p staging
-          cp build/bin/crc staging/opencrc
-          chmod +x staging/opencrc
+          mkdir staging
+          cp build/bin/crc staging/crc
+          chmod +x staging/crc
+          tar -czvf ${{ matrix.archive_name }} -C staging crc
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: staging/opencrc
+          path: ${{ matrix.archive_name }}
 
   release:
     name: Create Release
@@ -54,28 +57,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: opencrc-linux
-          path: linux_bin
 
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
           name: opencrc-macos
-          path: macos_bin
-
-      - name: Organize assets
-        run: |
-          mkdir dist
-          cp linux_bin/opencrc dist/opencrc-linux
-          cp macos_bin/opencrc dist/opencrc-macos
-          chmod +x dist/*
-          ls -R dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/opencrc-linux
-            dist/opencrc-macos
+            opencrc-linux.tar.gz
+            opencrc-macos.tar.gz
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           draft: false
