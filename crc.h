@@ -26,6 +26,6 @@ typedef struct {
 // === Functions ===
 uint64_t reflect_bits(uint64_t data, int width);
 uint64_t crc_compute(const CRCConfig* cfg, const uint8_t* data, size_t len);
-size_t parse_hex_input(const char* input, uint8_t* output);
+size_t parse_hex_input(const char* input, uint8_t* output, size_t max_len);
 
 #endif // CRC_H

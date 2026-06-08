@@ -173,7 +173,7 @@ int main() {
         } else if (strcmp(p, "current") == 0) {
             show_crc_parameters(&current_cfg, current_name);
         } else {
-            size_t len = parse_hex_input(p, data);
+            size_t len = parse_hex_input(p, data, sizeof(data));
             if (len == 0) {
                 set_fg_color(COLOR_RED);
                 printf("No valid bytes entered.\n");

@@ -30,10 +30,10 @@ uint64_t crc_compute(const CRCConfig* cfg, const uint8_t* data, size_t len) {
     return (crc ^ cfg->xor_out) & mask;
 }
 
-size_t parse_hex_input(const char* input, uint8_t* output) {
+size_t parse_hex_input(const char* input, uint8_t* output, size_t max_len) {
     size_t count = 0;
 
-    while (*input) {
+    while (*input && count < max_len) {
         // Skip whitespace
         while (*input && isspace((unsigned char)*input)) input++;
         if (!*input) break;
