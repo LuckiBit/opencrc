@@ -113,6 +113,11 @@ void linenoisePrintKeyCodes(void);
 void linenoiseMaskModeEnable(void);
 void linenoiseMaskModeDisable(void);
 
+#ifdef _WIN32
+void linenoiseInit(void);
+void linenoiseCleanup(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

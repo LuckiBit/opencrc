@@ -12,16 +12,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
             artifact_name: opencrc-linux
             archive_name: opencrc-linux.tar.gz
             cmake_flags: "-DCMAKE_EXE_LINKER_FLAGS=-static"
+            binary_src: build/bin/crc
+            binary_name: crc
           - os: macos-latest
             artifact_name: opencrc-macos
             archive_name: opencrc-macos.tar.gz
             cmake_flags: ""
+            binary_src: build/bin/crc
+            binary_name: crc
+          - os: windows-latest
+            artifact_name: opencrc-windows
+            archive_name: opencrc-windows.zip
+            cmake_flags: ""
+            binary_src: build/bin/Release/crc.exe
+            binary_name: crc.exe
 
     steps:
       - name: Checkout code
@@ -34,11 +44,16 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Package
+        shell: bash
         run: |
           mkdir staging
-          cp build/bin/crc staging/crc
-          chmod +x staging/crc
-          tar -czvf ${{ matrix.archive_name }} -C staging crc
+          cp ${{ matrix.binary_src }} staging/${{ matrix.binary_name }}
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a ${{ matrix.archive_name }} ./staging/${{ matrix.binary_name }}
+          else
+            chmod +x staging/${{ matrix.binary_name }}
+            tar -czvf ${{ matrix.archive_name }} -C staging ${{ matrix.binary_name }}
+          fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -63,12 +78,18 @@ jobs:
         with:
           name: opencrc-macos
 
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: opencrc-windows
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             opencrc-linux.tar.gz
             opencrc-macos.tar.gz
+            opencrc-windows.zip
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           draft: false

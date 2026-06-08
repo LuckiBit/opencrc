@@ -6,7 +6,7 @@ OpenCRC is a lightweight, interactive, and cross-platform Command Line Interface
 
 - **Multiple Algorithms**: Supports CRC-8, CRC-16 (CCITT, Modbus, USB), CRC-32 (ISO/HDLC), and CRC-64 (ECMA-182, GO-ISO).
 - **Interactive CLI**: Powered by `linenoise` for a smooth terminal experience with history and tab-completion.
-- **Cross-Platform**: Compatible with macOS, Linux, and Windows (via WSL).
+- **Cross-Platform**: Compatible with macOS, Linux, and Windows (natively or via WSL).
 - **Rich Output**: Includes colored console output and custom ANSI art fonts.
 - **Flexible Input**: Supports hex input with or without `0x` prefixes.
 
