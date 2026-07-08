@@ -1,6 +1,6 @@
-# OpenCRC
+# opencrc
 
-OpenCRC is a lightweight, interactive, and cross-platform Command Line Interface (CLI) tool for CRC (Cyclic Redundancy Check) calculations. It supports various standard CRC algorithms and provides a user-friendly terminal experience with features like auto-completion and ANSI art banners.
+opencrc is a lightweight, interactive, and cross-platform Command Line Interface (CLI) tool for CRC (Cyclic Redundancy Check) calculations. It supports various standard CRC algorithms and provides a user-friendly terminal experience with features like auto-completion and ANSI art banners.
 
 ## Features
 
@@ -33,8 +33,8 @@ OpenCRC is a lightweight, interactive, and cross-platform Command Line Interface
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/LuckiBit/OpenCRC.git
-   cd OpenCRC
+   git clone https://github.com/LuckiBit/opencrc.git
+   cd opencrc
    ```
 
 2. Create a build directory and compile:
